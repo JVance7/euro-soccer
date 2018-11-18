@@ -6,6 +6,7 @@ To get data used in this analysis, download the SQLite database at [here](https:
 ## Project Proposal
 
 Stat 6910 Final Project
+
 Jakob Johnson and Jennifer Vance
 
 ### Data/Problem
@@ -16,5 +17,5 @@ https://www.kaggle.com/hugomathien/soccer/
 ### Methods
 This is a classification problem with three outcomes (home win, away win, draw). We will use Decision Trees, Random Forests, and Neural Nets. We will also try a “Super Learner” on top of the other models to see if we can further increase accuracy.
 
-### Division of Work 
+### Division of Work
 Not sure exactly who will be doing what, but Jakob will be doing Neural Nets and Jennifer will be doing Random Forests. I think that most of the work, as well as most of the predictive accuracy increases will come from data cleaning and clever variable uses, such as foul types or something.   
