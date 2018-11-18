@@ -1,0 +1,9 @@
+## Invisibles
+.DS_Store
+.RHistory
+
+## very large datafile
+euro-soccer.sqlite
+
+## cached rmd chunks
+euro-soccer_cache

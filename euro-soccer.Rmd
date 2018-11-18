@@ -1,0 +1,92 @@
+---
+title: "European Soccer Database Project Stat 6910"
+author: "Jakob Johnson/Jenny Vance"
+date: "11/17/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# library(data.table)
+library(dplyr)
+library(RSQLite)
+library(knitr)
+```
+
+# Proposal
+## Data/Problem:
+For the final project, we have chosen a dataset that contains statistics about European soccer matches from 2008 to 2016. It also contains information, from this same timeframe, about teams, individual players, leagues, and countries. Our goal is to predict the outcome of soccer matches given information about the game. This is useful because it could be used to predict the outcome of a game currently in progress or the attributes of a game that tend to lead to a win. Also, incorporating individual player data, we might be able to predict which players will perform better in fantasy leagues. The dataset is downloaded as an SQLite database, and contains an enormous amount of information. Most of which will be very difficult to parse and may not be useful for predictions. 
+
+[Link to Dataset](https://www.kaggle.com/hugomathien/soccer/)
+
+## Methods
+This is a classification problem with three outcomes (home win, away win, draw). We will use Decision Trees, Random Forests, and Neural Nets. We will also try a “Super Learner” on top of the other models to see if we can further increase accuracy.
+
+## Division of Work: 
+Not sure exactly who will be doing what, but Jakob will be doing Neural Nets and Jennifer will be doing Random Forests. I think that most of the work, as well as most of the predictive accuracy increases will come from data cleaning and clever variable uses, such as foul types or something.  
+
+# Data Import and Cleaning
+
+The data is stored in a SQLite database, so the first challenge of the project is to learn to import the data from this filetype. We are using the `RSQLite` package. 
+
+```{r sql_import, cache = TRUE}
+# create a connection to the database
+con <- dbConnect(SQLite(), dbname="data/euro-soccer.sqlite")
+tables <- dbListTables(con)
+
+# exclude sqlite_sequence (contains table information)
+tables <- tables[tables != "sqlite_sequence"]
+
+df_l <- vector("list", length=length(tables))
+
+# create a data.frame for each table
+for (i in seq(along=tables)) {
+  df_l[[i]] <- dbGetQuery(conn=con,
+                                 statement=paste("SELECT * FROM '", tables[[i]], "'", sep=""))
+}
+
+# disconnect from the database
+dbDisconnect(con)
+
+#re-assign the dataframes, removing them from the list
+
+country <- df_l[[1]]
+league <- df_l[[2]]
+match <- df_l[[3]]
+player <- df_l[[4]]
+player_attr <- df_l[[5]]
+team <- df_l[[6]]
+team_attr <- df_l[[7]]
+
+rm(df_l) #clear space
+```
+
+We now have 7 data frames,
+
+1. `country` contains IDs for each of the 11 countries represented in the dataset.
+
+`r kable(head(country))`
+
+2. `league` contains IDs for each of the 11 leagues represented in the dataset as well as the country they are from, in ID form. 
+
+`r kable(head(league))`
+
+3. `match` contains information about each match in the dataset. Player position variables are `NA` for a significan portion of the dataset, so we will need to do some data cleaning and either remove observations or the `home/away_player_n` variables altogether. 
+The final columns, 3-5 character abbreviations, represent betting odds for various sites. [See more info here](http://www.football-data.co.uk/notes.txt).
+
+`r kable(head(match))`
+
+4. `player` contains basic information about each player, such as their name, ID, birthdate, height, and weight. 
+
+`r kable(head(player))`
+
+5. `player_attr` contains far more information about each player, some performance statistics such as accuracy and preffered foot, but other ratings/rankings like acceleration, jumping, stamina, and position. This dataset is interesting but it may be very difficult to transfer into helping our end goal. We could potntially do a sperate analysis on players alone, predicting which players will preform better or worse. 
+
+`r kable(head(player_attr))`
+
+6. `team` contains basic information about each team, such as name, abbreviation, and IDs.
+
+`r kable(head(team))`
+
+7. `team_attr` contains similar information to the `player_attr` dataset, but for the team as a whole. It may be useful to use these two datasets to create a performance index of sorts to help bias the model towards observably better teams in each match. 
+
+`r kable(head(team_attr))`
